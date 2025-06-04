@@ -13,6 +13,7 @@ def check_s3_file_count(ti):
     for page in page_iterator:
         if 'Contents' in page:
             key_count += len(page['Contents'])
+            print("Commit")
 
 
         
