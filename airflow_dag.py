@@ -41,11 +41,29 @@ with DAG("WF_BULK_ADJ",
     tasks={}
     job_ids={
 
-
-
+        902003:"task1",
+        902001:"param_file",
+        902003: "task1",
+        902001: "param_file",
+        902003: "task1",
+        902001: "param_file",
+        902003: "task1",
+        902001: "param_file"
 
 
     }
+
+    tasks["invoke_portal_lambda_running"]= PythonOperator(
+        task_id="invoke_portal_lambda_running",
+        python_callable=triggerLambda,
+        op_kwargs={"name":"app-lambda-name-aws",
+                   "job_id":902000,
+                   "payload":{"name":"aws_parameter_name","status":"running"}
+                   }
+
+
+
+    )
 
 
 
