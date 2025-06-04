@@ -11,6 +11,8 @@ def check_s3_file_count(ti):
     paginator=s3.get_paginator('list_objects_v2')
     page_iterator=paginator.paginate(Bucket=bucket_name, Prefix=prefix)
     for page in page_iterator:
-    if 'Contents' in page:
-        key_count += len(page[
+        if 'Contents' in page:
+            key_count += len(page['Contents'])
+
+
         
