@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.utils.dates import days_ago
-from airflow.operators.python import PythonOperator. BranchPythonOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.dummy import DummyOperator
 import boto3
 
@@ -60,11 +60,36 @@ with DAG("WF_BULK_ADJ",
                    "job_id":902000,
                    "payload":{"name":"aws_parameter_name","status":"running"}
                    }
-
-
-
     )
 
+    tasks["invoke_portal_lambda_completed"] = PythonOperator(
+        task_id="invoke_portal_lambda_completed",
+        python_callable=triggerLambda,
+        op_kwargs={"name": "app-lambda-name-aws",
+                   "job_id": 902075,
+                   "payload": {"name": "aws_parameter_name", "status": "completed"}
+                   }
+    )
 
+    tasks["check_s3_file_count"] = PythonOperator(
+        task_id="check_s3_file_count",
+        python_callable=check_s3_file_count,
+        provide_context=True
+    )
 
+    tasks["branching_task"] = BranchPythonOperator(
+        task_id="branching_task",
+        python_callable=decide_which_path,
+        provide_context=True
+    )
+
+    dependencies=[
+        ()
+
+    ]
+
+    for parent,child in dependencies:
+        tasks[parent] >>tasks[child]
+
+    tasks["start_workflow"] >> tasks["check_s3_file_count"] >> tasks["branching_task"] >> tasks["invoke_portal_lambda_running"] >> tasks["end_workflow"]
 
