@@ -40,7 +40,6 @@ with DAG("WF_BULK_ADJ",
 
     tasks={}
     job_ids={
-
         902003:"task1",
         902001:"param_file",
         902003: "task1",
@@ -49,8 +48,6 @@ with DAG("WF_BULK_ADJ",
         902001: "param_file",
         902003: "task1",
         902001: "param_file"
-
-
     }
 
     tasks["invoke_portal_lambda_running"]= PythonOperator(
@@ -84,8 +81,12 @@ with DAG("WF_BULK_ADJ",
     )
 
     dependencies=[
-        ()
-
+        ("check_ssm_variables","start_workflow"),
+        ("invoke_portal_lambda_running","mv_bulk_files"),
+        ("invoke_portal_lambda_running", "mv_bulk_files"),
+        ("invoke_portal_lambda_running", "mv_bulk_files"),
+        ("invoke_portal_lambda_running", "mv_bulk_files"),
+        ("invoke_portal_lambda_running", "mv_bulk_files")
     ]
 
     for parent,child in dependencies:
