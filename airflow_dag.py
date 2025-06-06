@@ -5,6 +5,8 @@ from airflow.operators.dummy import DummyOperator
 import boto3
 
 
+####Refer airflow_dag.jpeg for more clarification on branching operator
+
 def check_s3_file_count(ti):
     bucket_name='s3://'
     prefix= 'portal/radar_bulkupload/'
