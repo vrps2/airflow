@@ -83,14 +83,15 @@ with DAG("WF_BULK_ADJ",
     dependencies=[
         ("check_ssm_variables","start_workflow"),
         ("invoke_portal_lambda_running","mv_bulk_files"),
-        ("invoke_portal_lambda_running", "mv_bulk_files"),
-        ("invoke_portal_lambda_running", "mv_bulk_files"),
-        ("invoke_portal_lambda_running", "mv_bulk_files"),
-        ("invoke_portal_lambda_running", "mv_bulk_files")
+        ("mv_bulk_files", "param_file"),
+        ("param_file", "adj_load_start"),
+        ("adj_load_start", "account_dim_eom"),
+        ("account_dim_eom", "account_summary"),
+        ("account_summary", "end_workflow")
     ]
 
     for parent,child in dependencies:
         tasks[parent] >>tasks[child]
 
-    tasks["start_workflow"] >> tasks["check_s3_file_count"] >> tasks["branching_task"] >> tasks["invoke_portal_lambda_running"] >> tasks["end_workflow"]
+    tasks["start_workflow"] >> tasks["check_s3_file_count"] >> tasks["branching_task"] >> [tasks["invoke_portal_lambda_running"] >> tasks["end_workflow"]]
 
