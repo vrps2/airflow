@@ -1,5 +1,8 @@
 import json
-
+import logging
+import boto3
+from airflow.exceptions import AirflowException, AirflowFailException, AirflowSkipException
+from botocore.exceptions import BotoCreError, ClientError
 
 def triggerLambda(name,job_id,payload):
 
@@ -33,10 +36,22 @@ def triggerLambda(name,job_id,payload):
 
                 print('Lambda final response:',final_response)
 
-                try:{
+                try:
                     if final_response['Payload']['statusCodeValue']==200:
+                        logging.info("Lambda logic success")
+                        return final_response
+                    else:
+                        logging.info("Lambda logic failed. Please check code")
+                        raise AirflowFailException(f"Innter logic failed. Error Cde: {final_response['Payload']['statusCodeValue']}")
+
+                except Exception as e:
+                    raise AirflowFailExceptiion(e)
+
+                retry_count=4
+
+        except Exception as e:
+            logging.info(f"An error occurred :{e}. Retrying ({retry_count}/3) in 60 secs"
 
 
-
-
-                }
+        retry_count +=1
+        time.sleep(60)
