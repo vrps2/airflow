@@ -1,0 +1,54 @@
+from airflow import DAG
+from airflow.utils.dates import days_ago
+from dags.operator_utils.databricksApiOperator import DatabricksApiOperator from dags.fdi_sensors.Databricks_job_status_sensor import DBXJOBSensor
+from airflow.operators.python import PythonOperator from dags.fdi_common_utils.rdr_dbx_dag_util import *
+from dags.fdi_common_utils.execute_ lambda import *
+
+
+####This Jinja file is used to generate mulitple DAGs in bulk based on definition provided in MySQL DB entries
+
+default_args = {
+'owner": 'airflow'
+}
+
+
+#Would be replaced by dag call param
+job_id = {{ job_id}}
+lambda_name = '{{ api_def_dtls }}'
+
+with DAG(dag_id = '{{ dag_name }}',
+    start_date = days_ago (2),
+    schedule_interval = {{ schedule_interval }}.
+    default_args = default_args,
+    render_template_as_native_obj=True
+) as dag:
+
+    t0 = PythonOperator(
+    task_id= "get_payload_jobid",
+    python_callable=get_payload_jobid,
+    op_kwargs = {"lambda_name" :"{{ api_def_dtls }}',
+                    "job_id": {{ job_id }} }
+    )
+
+	t1 = PythonOperator (
+		task_id= "call_lambda"
+		python_callable=call_lambda ,
+		op_kwargs = {
+		"lambda_name":'{{ api_def_dtls }}',
+		"payload" : "{{'{{'}} ti.xcom_pull(task_ids='get_payload_jobid' , key='payload') {{'}}'}}",
+		"job_id" :"{{'{{'}} ti.xcom_pull(task_ids='get_payload_jobid' , key='job_id') {{'}}'}}"
+        }
+    )
+
+	t2 = PythonOperator(
+		task_id = "process_response",
+		python_callable=process_response,
+		op_kwargs = {
+		"response" : "{{'{{'}} ti.xcom_pull(task_ids='call_lambda* , key='response') {{'}}'}}",
+		"payload" : "{{'{{'}} t1.xcom_pulL(task_ids='get_payload_jobid', key='payload" {{'}}'}}",
+		"Job_id* : "{{'{{'}} ti.xcom_pUlL(task_ids='get_payload_jobid' , key="job_id') {{'}}'}}",
+		"bus_period" :"{{'{{'}} t1.xcom_pull(task_ids='get_payload_jobid' , key='bus_period") {{'}}'}}"
+        }
+    )
+
+	to >›t1 >>t2

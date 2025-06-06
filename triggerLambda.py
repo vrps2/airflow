@@ -2,7 +2,7 @@ import json
 import logging
 import boto3
 from airflow.exceptions import AirflowException, AirflowFailException, AirflowSkipException
-from botocore.exceptions import BotoCreError, ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 
 def triggerLambda(name,job_id,payload):
 
@@ -12,7 +12,6 @@ def triggerLambda(name,job_id,payload):
     logging.info("Inside trigger Lambda function")
     client=boto3.client('lambda',region_name='us-east-1')
     session=boto3.Session()
-
 
     while retry_count <4:
         try:
